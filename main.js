@@ -2,9 +2,9 @@
    UCHIHA ITACHI — scroll-scrubbed frames + mouse-tracked eyes
    ═══════════════════════════════════════════════════════════ */
 
-const MAIN_COUNT = 27;
-const EYE_COUNT  = 51;
+const EYE_COUNT = 51;
 const IS_MOBILE = window.matchMedia('(max-width: 820px), (pointer: coarse)').matches;
+const MAIN_COUNT = IS_MOBILE ? 14 : 27;
 const MOBILE_EYE_FRAMES = [1, 2, 3, 4, 5, 28, 29, 30, 31];
 const pad = n => String(n).padStart(3, '0');
 
@@ -41,7 +41,10 @@ function load(src, bucket, index) {
 }
 
 const jobs = [];
-for (let i = 1; i <= MAIN_COUNT; i++) jobs.push(load(`frames/main/${pad(i)}.jpg`, mainFrames, i - 1));
+for (let i = 1; i <= MAIN_COUNT; i++) {
+  const fileNo = IS_MOBILE ? (i * 2 - 1) : i;
+  jobs.push(load(`frames/main/${pad(fileNo)}.jpg`, mainFrames, i - 1));
+}
 if (IS_MOBILE) MOBILE_EYE_FRAMES.forEach(i => jobs.push(load(`frames/eyes/${pad(i)}.jpg`, eyeFrames, i - 1)));
 else for (let i = 1; i <= EYE_COUNT; i++) jobs.push(load(`frames/eyes/${pad(i)}.jpg`, eyeFrames, i - 1));
 
