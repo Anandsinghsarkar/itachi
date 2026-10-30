@@ -4,6 +4,8 @@
 
 const MAIN_COUNT = 27;
 const EYE_COUNT  = 51;
+const IS_MOBILE = window.matchMedia('(max-width: 820px), (pointer: coarse)').matches;
+const MOBILE_EYE_FRAMES = [1, 2, 3, 4, 5, 28, 29, 30, 31];
 const pad = n => String(n).padStart(3, '0');
 
 const lerp  = (a, b, t) => a + (b - a) * t;
@@ -16,7 +18,7 @@ const window4 = (p, a, b, c, d) =>
 const mainFrames = [];
 const eyeFrames  = [];
 let loaded = 0;
-const total = MAIN_COUNT + EYE_COUNT;
+const total = MAIN_COUNT + (IS_MOBILE ? MOBILE_EYE_FRAMES.length : EYE_COUNT);
 
 const loaderEl  = document.getElementById('loader');
 const loaderFill = document.getElementById('loaderFill');
@@ -40,7 +42,8 @@ function load(src, bucket, index) {
 
 const jobs = [];
 for (let i = 1; i <= MAIN_COUNT; i++) jobs.push(load(`frames/main/${pad(i)}.jpg`, mainFrames, i - 1));
-for (let i = 1; i <= EYE_COUNT;  i++) jobs.push(load(`frames/eyes/${pad(i)}.jpg`, eyeFrames,  i - 1));
+if (IS_MOBILE) MOBILE_EYE_FRAMES.forEach(i => jobs.push(load(`frames/eyes/${pad(i)}.jpg`, eyeFrames, i - 1)));
+else for (let i = 1; i <= EYE_COUNT; i++) jobs.push(load(`frames/eyes/${pad(i)}.jpg`, eyeFrames, i - 1));
 
 Promise.all(jobs).then(() => {
   setTimeout(() => {
@@ -57,7 +60,7 @@ Promise.all(jobs).then(() => {
    offsetWidth/Height, not getBoundingClientRect, because these canvases carry
    CSS transforms and a transformed rect would poison the size. */
 function fitCanvas(canvas) {
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const dpr = Math.min(window.devicePixelRatio || 1, IS_MOBILE ? 1 : 1.5);
   const w = Math.round(canvas.offsetWidth  * dpr);
   const h = Math.round(canvas.offsetHeight * dpr);
   if (canvas.width !== w || canvas.height !== h) {
@@ -100,6 +103,7 @@ function createGhostCursor(canvas, opts = {}) {
   const TRAIL    = opts.trailLength ?? 28;
   const INERTIA  = opts.inertia ?? 0.5;
   const MAX_DPR  = opts.maxDevicePixelRatio ?? 0.45;
+  if (IS_MOBILE) return { resize() {}, move() {}, render() {}, leave() {}, ok: false };
   const BUDGET   = opts.targetPixels ?? 4.2e5;
   const BRIGHT   = opts.brightness ?? 1.45;
   const EDGE     = opts.edgeIntensity ?? 0.35;
@@ -378,7 +382,7 @@ const feathers = [];
 
 function seedFeathers() {
   feathers.length = 0;
-  const n = window.innerWidth < 820 ? 28 : 54;
+  const n = IS_MOBILE ? 9 : (window.innerWidth < 820 ? 18 : 54);
   for (let i = 0; i < n; i++) {
     feathers.push({
       x: Math.random(), y: Math.random(),
@@ -427,7 +431,7 @@ let amaPainted = false;
 function seedFlames() {
   flames.length = 0;
   /* one tongue every ~26 css px, so the hem stays dense on any width */
-  const n = Math.max(22, Math.round(window.innerWidth / 26));
+  const n = IS_MOBILE ? 8 : Math.max(22, Math.round(window.innerWidth / 26));
   for (let i = 0; i < n; i++) {
     const depth = Math.random();                    // 0 far · 1 near
     flames.push({
@@ -827,7 +831,7 @@ function strike() {
   stormTimer = setTimeout(strike, lo + Math.random() * (hi - lo));
 }
 
-if (!reducedMotion) stormTimer = setTimeout(strike, 1800);
+if (!reducedMotion && !IS_MOBILE) stormTimer = setTimeout(strike, 1800);
 
 /* ── sound toggle (browsers require a gesture before audio) ── */
 const soundToggle = document.getElementById('soundToggle');
@@ -858,7 +862,11 @@ let rt;
 window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(resizeAll, 140); });
 
 /* ═════════════════════ main loop ═════════════════════ */
-function tick() {
+let mobileLastFrame = 0;
+let mobileFlameFrame = 0;
+function tick(now = performance.now()) {
+  if (IS_MOBILE && now - mobileLastFrame < 32) { requestAnimationFrame(tick); return; }
+  if (IS_MOBILE) mobileLastFrame = now;
   readScroll();
   readScrub();
 
@@ -867,7 +875,7 @@ function tick() {
 
   /* — Amaterasu: the hem never stops burning (one static pass if the user
        asked for reduced motion) — */
-  if (!reduceMotion) paintAmaterasu(performance.now() / 1000);
+  if (!reduceMotion && (!IS_MOBILE || (++mobileFlameFrame % 4 === 0))) paintAmaterasu(performance.now() / 1000);
   else if (!amaPainted) { paintAmaterasu(0); amaPainted = true; }
 
   /* — Act I: scrubbed frames — */
@@ -940,10 +948,10 @@ function tick() {
   }
 
   /* — Act III: parallax, reveal mask, ghost cursor — */
-  paintJutsu();
+  if (!IS_MOBILE) paintJutsu();
 
   const jr = jutsuSection.getBoundingClientRect();
-  if (jr.top < window.innerHeight && jr.bottom > 0) {
+  if (!IS_MOBILE && jr.top < window.innerHeight && jr.bottom > 0) {
     revealX = lerp(revealX, revealTX, 0.13);
     revealY = lerp(revealY, revealTY, 0.13);
     revealR = lerp(revealR, jutsuLit ? revealRT : 0, 0.09);
