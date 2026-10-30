@@ -621,3 +621,52 @@ footer{
   .grain,.uchiwa,.hint__line{animation:none}
   html{scroll-behavior:auto}
 }
+
+
+/* ANDROID / LOW-POWER MODE */
+@media (max-width:820px), (pointer:coarse) {
+ html{scroll-behavior:auto;-webkit-text-size-adjust:100%}
+ body{overscroll-behavior-y:contain}
+ .grain,.vignette,.storm,.cursor,.rail,.ghost,.amaterasu,.amaterasu-bed{display:none!important}
+ .chrome{padding:calc(env(safe-area-inset-top) + 12px) 16px 12px}
+ .chrome__mark span{font-size:.65rem;letter-spacing:.25em}
+ .chrome__nav{gap:12px;align-items:center}
+ .chrome__nav a{font-size:.58rem;letter-spacing:.12em}
+ .chrome__nav a::before{display:none}
+ .chrome__sound{padding:7px 9px;min-height:34px}
+ .scrub{height:360vh}
+ .scrub__sticky{height:100svh;height:100dvh}
+ #mainCanvas,#eyeCanvas{filter:none}
+ .scrub__sticky::after{background:linear-gradient(0deg,rgba(0,0,0,.7),transparent 45%),linear-gradient(180deg,rgba(0,0,0,.5),transparent 22%)}
+ .phase{bottom:15vh;max-width:88vw}
+ .phase__jp{font-size:clamp(2rem,10vw,3.2rem)}
+ .phase__sub{font-size:.72rem;line-height:1.6}
+ .titleblock{bottom:7vh}
+ .titleblock__jp{font-size:clamp(2.8rem,14vw,5rem)}
+ .eyes,.eyes__sticky{height:100svh;height:100dvh}
+ .eyes__copy{transform:translateY(25vh);padding:0 18px}
+ .eyes__copy p{font-size:.72rem;line-height:1.7}
+ .eyes__note,.eyes__label--br,.eyes__label--tr{display:none!important}
+ .eyes__label{font-size:.52rem;letter-spacing:.14em}
+ .jutsu{padding:5rem 20px 12rem}
+ .jutsu__reveal,.jutsu__rain{display:none}
+ .jutsu__head{margin-bottom:2.5rem}
+ .jutsu__head p{font-size:.84rem;line-height:1.8}
+ .jutsu__meta{gap:16px}
+ .jutsu__foot{gap:12px}
+ .jutsu__foot span:last-child{font-size:.48rem;line-height:1.6}
+ .sticky-badge{right:12px;bottom:calc(env(safe-area-inset-bottom) + 12px);padding:8px 10px}
+ .hint{bottom:calc(env(safe-area-inset-bottom) + 14px)}
+ .loader__inner{width:76vw}
+}
+@media(max-width:420px){
+ .chrome{padding-left:12px;padding-right:12px}
+ .chrome__nav{gap:9px}
+ .chrome__nav a{font-size:.52rem}
+ .chrome__mark{gap:6px}
+ .uchiwa{width:18px;height:18px}
+ .phase__sub{max-width:84vw}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
